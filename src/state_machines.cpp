@@ -80,14 +80,14 @@ void state_machine_t::do_state_actions(void)
 }
 
 
-// state_machines_t: TODO yet
+// state_machines_t: TODO: test
 
 int state_machines_t::register_state_machine(pstate_machine_t new_psm)
 {
   if (count >= MAX_STATE_MACHINES) return -1;
   psm[count] = new_psm;
   count++;
-  return count - 11;
+  return count - 1;
 }  
   
 void state_machines_t::calc_next_states(void)
@@ -136,3 +136,6 @@ void state_machines_t::step(void)
   do_enter_states_actions();
   do_states_actions();
 }
+
+
+state_machines_t state_machines;

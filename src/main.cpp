@@ -111,6 +111,8 @@ INA226_WE ina226 = INA226_WE(0x40);
 void init_control(robot_t& robot);
 void control(robot_t& robot);
 
+#include "trajectories.h"
+
 PID_pars_t wheel_PID_pars;
 
 
@@ -213,6 +215,21 @@ void process_command(command_frame_t frame)
 
   } else if (frame.command_is("sl")) { 
     robot.solenoid_PWM = frame.value;    
+
+  } else if (frame.command_is("xr")) { 
+    robot.xe = frame.value;    
+
+  } else if (frame.command_is("yr")) { 
+    robot.ye = frame.value;    
+
+  } else if (frame.command_is("tr")) { 
+    robot.thetae = frame.value;    
+
+  } else if (frame.command_is("xt")) { 
+    traj.xt = frame.value;    
+
+  } else if (frame.command_is("yt")) { 
+    traj.yt = frame.value;    
 
   /*} else if (frame.command_is("kfd")) { 
     wheel_PID_pars.Kfd = frame.value;    
@@ -464,6 +481,8 @@ int setup_ina226(void)
 void setup() 
 {
   // Set the pins as input or output as needed
+  pinMode(LED_BUILTIN, OUTPUT);
+
   pinMode(ENC1_A, INPUT_PULLUP);
   pinMode(ENC1_B, INPUT_PULLUP);
   pinMode(ENC2_A, INPUT_PULLUP);
@@ -515,7 +534,7 @@ void setup()
   LittleFS.begin();
 
   float control_interval = 0.04;  // In seconds
-  int i;
+  
   // All wheeel PID controllers share the same parameters
   wheel_PID_pars.Kf = 0.18;
   wheel_PID_pars.Kc = 0.168;
@@ -524,9 +543,13 @@ void setup()
   wheel_PID_pars.Kfd = 0;
   wheel_PID_pars.dt = control_interval;
   wheel_PID_pars.dead_zone = 0.2;
+  int i;
   for (i = 0; i < NUM_WHEELS; i++) {
     robot.PID[i].init_pars(&wheel_PID_pars);
   }
+
+  //strcpy(ssid, "TP-Link_4B12");
+  //strcpy(password, "23893481");
 
   strcpy(ssid, "TP-Link_29CD");
   strcpy(password, "49871005");
@@ -538,21 +561,7 @@ void setup()
  
   // Start WiFi with supplied parameters
   WiFi.begin(ssid, password);
-  
-  // Print periods on monitor while establishing connection
-  /*while (WiFi.status() != WL_CONNECTED) {
-    Serial.print(" SSID: ");
-    Serial.println(ssid); 
-    //delay(200);
-    uint8_t b;
-    if (Serial.available()) {  // Only do this if there is serial data to be read
-      b = Serial.read();    
-      //serial_commands.process_char(b);
-    }   
-  }*/
 
-  //Serial2.setRX(21);
-  //Serial2.begin(115200);
   SerialTiny.begin();
 
   //if (ITimer1.attachInterrupt(40000, timer_handler))
@@ -604,16 +613,9 @@ void loop()
 {
   if (WiFi.connected() && !ip_on) {
     // Connection established
-    //Serial.println("");
-    //Serial.print("Pico W is connected to WiFi network ");
-    //Serial.println(WiFi.SSID());
     serial_commands.send_command("msg", (String("Pico W is connected to WiFi network with SSID ") + WiFi.SSID()).c_str());
-    //serial_commands.send_command("msg", WiFi.SSID().c_str());
  
     // Print IP Address
-    //Serial.print("Assigned IP Address: ");
-    //Serial.println(WiFi.localIP()); 
-
     ip_on = Udp.begin(localUdpPort);
     Serial.printf("Now listening at IP %s, UDP port %d\n", WiFi.localIP().toString().c_str(), localUdpPort);
   }
@@ -638,7 +640,6 @@ void loop()
       for (i = 0; i < len; i++) {
         udp_commands.process_char(UdpInPacket[i]);
         //Serial.write(UdpInPacket[i]);
-        //digitalWrite(LED_BUILTIN, 1);
       }
     }      
   }
@@ -661,8 +662,6 @@ void loop()
      load_commands(pars_fname, serial_commands);
      load_pars_requested = false;
   }
-  // To measure the time between loop() calls
-  //unsigned long last_loop_micros = loop_micros; 
   
   // Do this only every "interval" microseconds 
   uint32_t now = micros();
@@ -709,11 +708,10 @@ void loop()
     control(robot);
 
     // Calc outputs
-    //robot.setRobotVW(robot.v_req, robot.w_req);
-    
     //robot.accelerationLimit();
     robot.v = robot.v_req;
     robot.w = robot.w_req;
+    
     robot.calcMotorsVoltage();
 
     robot.PWM_1 = robot.u1 / robot.battery_voltage * analogWriteMax;
@@ -723,6 +721,8 @@ void loop()
     setMotorPWM(robot.PWM_2, MOTOR2A_PIN, MOTOR2B_PIN);
 
     setMotorPWM(robot.solenoid_PWM, SOLENOID_PIN_A, SOLENOID_PIN_B);
+
+    digitalWrite(LED_BUILTIN, robot.led);
     
     // Debug information
     serial_commands.send_command("dte", delta);
@@ -742,6 +742,8 @@ void loop()
 
     serial_commands.send_command("dist", robot.dist_to_goal);
     serial_commands.send_command("ang", robot.angular_error);
+    serial_commands.send_command("xt", robot.xt);
+    serial_commands.send_command("yt", robot.yt);
 
     serial_commands.send_command("ve", robot.ve);
     serial_commands.send_command("we", robot.we);
@@ -759,6 +761,7 @@ void loop()
     serial_commands.send_command("st", robot.pfsm->state);
 
     serial_commands.send_command("IP", WiFi.localIP().toString().c_str());
+    
     //serial_commands.send_command("IR0", robot.IRLine.IR_values[0]);
     //serial_commands.send_command("IR1", robot.IRLine.IR_values[1]);
     //serial_commands.send_command("IR2", robot.IRLine.IR_values[2]);
@@ -766,14 +769,22 @@ void loop()
     //serial_commands.send_command("IR4", robot.IRLine.IR_values[4]);
 
     //serial_commands.send_command("d0", robot.tof_dist);
+
     //serial_commands.send_command("fk", robot.follow_k);
     //serial_commands.send_command("fv", robot.follow_v);
     //serial_commands.send_command("ilambda", robot.i_lambda);
+    //serial_commands.send_command("pr", robot.IRLine.pos_right);
+    //serial_commands.send_command("pl", robot.IRLine.pos_left);
+
     serial_commands.send_command("m1", robot.PWM_1);
     serial_commands.send_command("m2", robot.PWM_2);
 
-    //serial_commands.send_command("pr", robot.IRLine.pos_right);
-    //serial_commands.send_command("pl", robot.IRLine.pos_left);
+    serial_commands.send_command("xe", robot.xe);
+    serial_commands.send_command("ye", robot.ye);
+    serial_commands.send_command("te", robot.thetae);
+
+    serial_commands.send_command("xt", traj.xt);
+    serial_commands.send_command("yt", traj.yt);
 
     pars_list.send_sparse_commands(serial_commands);
 
@@ -782,9 +793,7 @@ void loop()
     Serial.print("; ");
       
     debug = serial_commands.out_count;
-    serial_commands.send_command("dbg", robot.v1ref); 
-    //Serial.print(" loop: ");
-    //Serial.println(micros() - loop_micros);
+    serial_commands.send_command("dbg", robot.led); 
     serial_commands.send_command("loop", micros() - loop_micros);  
      
     serial_commands.flush();   

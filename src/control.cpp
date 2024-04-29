@@ -1,26 +1,10 @@
 #include <Arduino.h>
 #include "robot.h"
 #include "state_machines.h"
+#include "motor_bench.h"
 #include "trajectories.h"
 
-enum motor_bench_state_t {
-  mb_heat_motor = 400,
-  mb_goto_voltage,
-  mb_acc_measure
-};
-
-typedef struct {
-  float acc_i, acc_w;
-  int n;
-  float warm_up_voltage, warm_up_time;
-  float max_voltage;
-  float voltage_step, settle_time;
-  int total_measures;
-} motor_bench_t;
-
 motor_bench_t motor_bench;
-
-state_machines_t state_machines;
 
 class main_fsm_t: public state_machine_t
 {
@@ -80,11 +64,6 @@ class main_fsm_t: public state_machine_t
       char scratch[256];
        
       snprintf(scratch, 256, "%.6g %.6g %.6g", robot.u1, motor_bench.acc_i / motor_bench.n, motor_bench.acc_w / motor_bench.n); 
-      /*i = 0;
-      while(scratch[i]) {
-        scratch[i] |= 0x80;
-        i++;
-      }*/
       robot.pchannels->send_string(scratch, true);
 
       robot.u1_req += motor_bench.voltage_step;
@@ -152,7 +131,20 @@ class main_fsm_t: public state_machine_t
 
     } else if (state == 101) {  // Option for remote control
       robot.control_mode = cm_kinematics;
-      goto_xy(robot, 0.30, 0.30, 0.3);
+      traj.set_theta();
+      traj.xr = robot.xe;
+      traj.yr = robot.ye;
+      traj.thetar = robot.thetae;
+      traj.xt = 0.3;
+      traj.yt = 0.3;
+      traj.vt = 0.3;
+      traj.goto_xy();
+      robot.angular_error = traj.e_angle;
+      robot.dist_to_goal = traj.e_xy;
+      robot.v_req = traj.v_req;
+      robot.w_req = traj.w_req;
+      robot.xt = traj.xt;
+      robot.yt = traj.yt;
       robot.setRobotVW(robot.v_req, robot.w_req);
 
     } else if (state == 102) {  // Option for remote PID control
@@ -205,25 +197,60 @@ class main_fsm_t: public state_machine_t
 
 main_fsm_t main_fsm;
 
+
+class LED_fsm_t: public state_machine_t
+{
+  virtual void next_state_rules(void) 
+  {
+    // Rules for the state evolution
+     if(state == 0 && tis > 0.1) {
+      set_new_state(1);
+
+    } else if (state == 1 && tis > 0.2) {
+      set_new_state(2);
+
+    } else if(state == 2 && tis > 0.2) {
+      set_new_state(3);
+
+    } else if(state == 3 && tis > 0.6) {
+      set_new_state(0);
+    }
+  };
+
+
+  virtual void state_actions_rules(void)
+  {
+    // Actions in each state
+    if (state == 0) {        // LED on
+      robot.led = 1;
+
+    } else if (state == 1) { // LED off
+      robot.led = 0;
+
+    } else if (state == 2) { // LED on 
+      robot.led = 1;
+    
+    } else if (state == 3) { // LED off
+      robot.led = 0;
+    }      
+  };  
+};
+
+LED_fsm_t LED_fsm;
+
+
 void init_control(robot_t& robot)
 {
-  motor_bench.warm_up_voltage = 5;
-  motor_bench.warm_up_time = 4;
-  motor_bench.settle_time = 1.5;
-  motor_bench.total_measures = 32;
-  motor_bench.voltage_step = 0.25;
-  motor_bench.max_voltage = 5.1;
-
   robot.pfsm = &main_fsm;
   main_fsm.set_new_state(0);
   main_fsm.update_state();
+  state_machines.register_state_machine(&main_fsm);
+  state_machines.register_state_machine(&LED_fsm);
 }
 
 void control(robot_t& robot)
 {
   robot.control_mode = cm_kinematics;
-  main_fsm.calc_next_state();
-  main_fsm.update_state();
-  main_fsm.do_enter_state_actions();
-  main_fsm.do_state_actions();
+
+  state_machines.step();
 }

@@ -2,10 +2,33 @@
 #define trajectories_H
 
 #include "Arduino.h"
-#include "robot.h"
 
-void normalize_angle(float& angle);
+class trajectory_t
+{
+  public:
+    float xi, yi;
+    float xt, yt;
+    float vt;
+    float v_nom, w_nom;
+    float cx, cy;
+    float e_xy, e_angle;
+    float xr, yr, thetar;
 
-void goto_xy(robot_t& robot, float xt, float yt, float vt);
+    float v_req, w_req;
+    
+    trajectory_t();
+    
+    void set_theta(void);
+    void goto_xy(void);
+    void follow_line(void);
+    void follow_circle(void);
+};
+
+float sqr(float x);
+float dist(float x0, float y0, float x1, float y1);
+float normalize_angle(float ang);
+float dif_angle(float a0, float a1);
+
+extern trajectory_t traj;
 
 #endif // trajectories_H

@@ -1,4 +1,4 @@
-/* Copyright (c) 2023  Paulo Costa
+/* Copyright (c) 2024  Paulo Costa
    All rights reserved.
 
    Redistribution and use in source and binary forms, with or without
@@ -26,66 +26,32 @@
   ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
   POSSIBILITY OF SUCH DAMAGE. */
 
-#ifndef STATE_MACHINES_H
-#define STATE_MACHINES_H
+#ifndef MOTOR_BENCH_H
+#define MOTOR_BENCH_H
 
-#include <stdint.h>
+enum motor_bench_state_t {
+  mb_heat_motor = 400,
+  mb_goto_voltage,
+  mb_acc_measure
+};
 
-class state_machine_t
+class motor_bench_t
 {
   public:
 
-  int state, new_state, prev_state;
+  float acc_i, acc_w;
+  int n;
+  float warm_up_voltage, warm_up_time;
+  float max_voltage;
+  float voltage_step, settle_time;
+  int total_measures;
+  float ui, uf, ti, tf;
+  float A, tau;
 
-  // tes - time entering state
-  // tis - time in state
-  uint32_t tes_ms, tis_ms;
-  float tis; 
-  uint32_t actions_count;
+  motor_bench_t();
+  void init(void);
 
-  state_machine_t();
-  void set_new_state(int astate);
-  void update_state(void);
-  
-  float time_since(uint32_t when);
-  
-  void calc_next_state(void);
-  virtual void next_state_rules(void) {};
 
-  void do_enter_state_actions(void);
-  virtual void enter_state_actions_rules(void) {};
-
-  void do_state_actions(void);
-  virtual void state_actions_rules(void) {};
-
-  void step(void);
 };
 
-
-#ifndef MAX_STATE_MACHINES
-#define MAX_STATE_MACHINES 32
-#endif 
-
-typedef state_machine_t* pstate_machine_t;
-
-class state_machines_t
-{
-  public:
-  pstate_machine_t psm[MAX_STATE_MACHINES];
-  int count;
-
-  int register_state_machine(pstate_machine_t new_psm);
-
-  void calc_next_states(void);
-  void update_states(void);
-
-  void do_enter_states_actions(void);
-  void do_states_actions(void);
-
-  void step(void);
-};
-
-
-extern state_machines_t state_machines;
-
-#endif // STATE_MACHINES_H
+#endif // MOTOR_BENCH_H

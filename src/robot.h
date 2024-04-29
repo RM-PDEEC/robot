@@ -56,9 +56,10 @@ class robot_t {
   float ds, dtheta;
   float rel_s, rel_theta;
   float xe, ye, thetae;
-
+  
   float dist_to_goal;
   float angular_error;
+  float xt, yt;
   
   float dt;
   float v, w;
@@ -84,6 +85,7 @@ class robot_t {
   int button_state;
 
   int solenoid_PWM;
+  int led;
 
   IRLine_t IRLine;
   float tof_dist, prev_tof_dist;

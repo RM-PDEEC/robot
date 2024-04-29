@@ -66,8 +66,6 @@ int save_commands(const char* filename, commands_list_t& cl, gchannels_t& gchann
   f = LittleFS.open(filename, "w+");
   if (!f) {
     gchannels.send_command("err", filename);
-    //Serial.print("Error: could not create/open the file ");
-    //Serial.println(filename);
     return 0;
   }
 
@@ -90,8 +88,6 @@ int load_commands(const char* filename, gchannels_t& gchannels)
   f = LittleFS.open(filename, "r");
   if (!f) {
     gchannels.send_command("err", filename);
-    //Serial.print("Error: could not create/open the file ");
-    //Serial.println(filename);
     return 0;
   }
 

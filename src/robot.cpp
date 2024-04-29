@@ -49,6 +49,7 @@ robot_t::robot_t()
   follow_v = 0.20;
 
   i_lambda = 0;
+  led = 0;
 
   pchannels = NULL;
   pfsm = NULL;
