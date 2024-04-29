@@ -62,7 +62,7 @@ void trajectory_t::set_theta(void)
 
 void trajectory_t::goto_xy(void)
 {
-  Point2D robot_coordinates = inverseTransformPoint({xt, yt}, 0, 0, 180);
+  Point2D robot_coordinates = inverseTransformPoint({xt, yt}, 0, 0, 0);
   // xt = robot_coordinates.x;
   // yt = robot_coordinates.y;
 
