@@ -82,12 +82,12 @@ void trajectory_t::goto_xy(void)
   }
   else
   {
-    v_nom = 0;
     w_nom = 0;
+    v_nom = 0;
   }
 
-  v_req = v_nom;
   w_req = w_nom;
+  v_req = v_nom;
 }
 
 void trajectory_t::follow_line(void)
