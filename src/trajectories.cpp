@@ -19,6 +19,8 @@ struct Point2D {
 
 // Function to perform 2D inverse transformation
 Point2D inverseTransformPoint(const Point2D& world_coordinates, double tx, double ty, double angle);
+// Function to perform 2D transformation
+Point2D transformPoint(const Point2D& robot_coordinates, double tx, double ty, double angle);
 
 float sqr(float x)
 {
@@ -105,39 +107,82 @@ void trajectory_t::follow_circle(void)
 
 // Function to perform 2D inverse transformation
 Point2D inverseTransformPoint(const Point2D& world_coordinates, double tx, double ty, double angle) {
-    // Convert angle to radians
-    double theta = angle * M_PI / 180.0; // Negative of angle for inverse transformation
+  // Convert angle to radians
+  double theta = angle * M_PI / 180.0; // Negative of angle for inverse transformation
 
-    // Construct translation matrix
-    std::array<std::array<double, 3>, 3> translation_matrix = {{
-        {1, 0, tx}, // Negative of translation for inverse transformation
-        {0, 1, ty},
-        {0, 0, 1}
-    }};
+  // Construct translation matrix
+  std::array<std::array<double, 3>, 3> translation_matrix = {{
+    {1, 0, tx}, // Negative of translation for inverse transformation
+    {0, 1, ty},
+    {0, 0, 1}
+  }};
 
-    // Construct rotation matrix
-    std::array<std::array<double, 3>, 3> rotation_matrix = {{
-        {cos(theta), -sin(theta), 0},
-        {sin(theta), cos(theta), 0},
-        {0, 0, 1}
-    }};
+  // Construct rotation matrix
+  std::array<std::array<double, 3>, 3> rotation_matrix = {{
+    {cos(theta), -sin(theta), 0},
+    {sin(theta), cos(theta), 0},
+    {0, 0, 1}
+  }};
 
-    // Multiply rotation and translation matrices
-    std::array<std::array<double, 3>, 3> transformation_matrix;
-    for (int i = 0; i < 3; ++i) {
-        for (int j = 0; j < 3; ++j) {
-            transformation_matrix[i][j] = 0;
-            for (int k = 0; k < 3; ++k) {
-                transformation_matrix[i][j] += rotation_matrix[i][k] * translation_matrix[k][j];
-            }
-        }
+  // Multiply rotation and translation matrices
+  std::array<std::array<double, 3>, 3> transformation_matrix;
+  for (int i = 0; i < 3; ++i)
+  {
+    for (int j = 0; j < 3; ++j)
+    {
+      transformation_matrix[i][j] = 0;
+      for (int k = 0; k < 3; ++k)
+      {
+        transformation_matrix[i][j] += rotation_matrix[i][k] * translation_matrix[k][j];
+      }
     }
+  }
 
-    // Transform coordinates
-    Point2D robot_coordinates;
-    robot_coordinates.x = world_coordinates.x * transformation_matrix[0][0] + world_coordinates.y * transformation_matrix[0][1] + transformation_matrix[0][2];
-    robot_coordinates.y = world_coordinates.x * transformation_matrix[1][0] + world_coordinates.y * transformation_matrix[1][1] + transformation_matrix[1][2];
-    
-    return robot_coordinates;
+  // Transform coordinates
+  Point2D robot_coordinates;
+  robot_coordinates.x = world_coordinates.x * transformation_matrix[0][0] + world_coordinates.y * transformation_matrix[0][1] + transformation_matrix[0][2];
+  robot_coordinates.y = world_coordinates.x * transformation_matrix[1][0] + world_coordinates.y * transformation_matrix[1][1] + transformation_matrix[1][2];
+  
+  return robot_coordinates;
 }
 
+// Function to perform 2D transformation
+Point2D transformPoint(const Point2D& robot_coordinates, double tx, double ty, double angle) {
+  // Convert angle to radians
+  double theta = angle * M_PI / 180.0;
+
+  // Construct translation matrix
+  std::array<std::array<double, 3>, 3> translation_matrix = {{
+    {1, 0, tx},
+    {0, 1, ty},
+    {0, 0, 1}
+  }};
+
+  // Construct rotation matrix
+  std::array<std::array<double, 3>, 3> rotation_matrix = {{
+    {cos(theta), -sin(theta), 0},
+    {sin(theta), cos(theta), 0},
+    {0, 0, 1}
+  }};
+
+  // Multiply translation and rotation matrices
+  std::array<std::array<double, 3>, 3> transformation_matrix;
+  for (int i = 0; i < 3; ++i)
+  {
+    for (int j = 0; j < 3; ++j)
+    {
+      transformation_matrix[i][j] = 0;
+      for (int k = 0; k < 3; ++k)
+      {
+        transformation_matrix[i][j] += translation_matrix[i][k] * rotation_matrix[k][j];
+      }
+    }
+  }
+
+  // Transform coordinates
+  Point2D world_coordinates;
+  world_coordinates.x = robot_coordinates.x * transformation_matrix[0][0] + robot_coordinates.y * transformation_matrix[0][1] + transformation_matrix[0][2];
+  world_coordinates.y = robot_coordinates.x * transformation_matrix[1][0] + robot_coordinates.y * transformation_matrix[1][1] + transformation_matrix[1][2];
+  
+  return world_coordinates;
+}
