@@ -135,9 +135,9 @@ class main_fsm_t: public state_machine_t
       traj.xr = robot.xe;
       traj.yr = robot.ye;
       traj.thetar = robot.thetae;
-      traj.xt = 0.3;
-      traj.yt = 0.3;
-      traj.vt = 0.3;
+      // traj.xt = 0.3;
+      // traj.yt = 0.3;
+      traj.vt = 0.4;
       traj.goto_xy();
       robot.angular_error = traj.e_angle;
       robot.dist_to_goal = traj.e_xy;

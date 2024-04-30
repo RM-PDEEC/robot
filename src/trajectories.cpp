@@ -63,39 +63,31 @@ void trajectory_t::set_theta(void)
 void trajectory_t::goto_xy(void)
 {
   Point2D robot_coordinates = inverseTransformPoint({xt, yt}, 0, 0, 0);
-  // xt = robot_coordinates.x;
-  // yt = robot_coordinates.y;
 
   e_xy = dist(xr, yr, robot_coordinates.x, robot_coordinates.y);
 
   e_angle = dif_angle(atan2( robot_coordinates.y - yr,  robot_coordinates.x - xr), thetar);
 
-  if (fabs(e_angle) <= ANGULAR_ERROR_LIMIT &&
-      e_xy <= DISTANCE_ERROR_LIMIT)
+  if (fabs(e_angle) > ANGULAR_ERROR_LIMIT)
+  {
+    w_nom = ROTATION_STEP * e_angle;
+    v_nom = 0;
+  }
+  else if (e_xy > DISTANCE_ERROR_LIMIT)
+  {
+    w_nom = ROTATION_STEP * e_angle;
+    v_nom = vt * cos(e_angle) * e_xy;
+    if (v_nom > vt)
+      v_nom = vt * cos(e_angle);
+  }
+  else
   {
     v_nom = 0;
     w_nom = 0;
   }
 
-  /*if (fabs(e_angle) > ANGULAR_ERROR_LIMIT)
-  {
-    w_nom = ROTATION_STEP * e_angle;
-  }
-  else*/ else
-  {
-    w_nom = ROTATION_STEP * e_angle;
-    v_nom = vt * cos(e_angle) * e_xy;
-    if (v_nom > vt)
-        v_nom = vt * cos(e_angle);
-    
-    v_req = v_nom;
-    w_req = w_nom;
-  }
-  // else
-  // {
-  //   v_nom = 0;
-  //   w_nom = 0;
-  // }
+  v_req = v_nom;
+  w_req = w_nom;
 }
 
 void trajectory_t::follow_line(void)
