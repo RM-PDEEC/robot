@@ -551,8 +551,8 @@ void setup()
   //strcpy(ssid, "TP-Link_4B12");
   //strcpy(password, "23893481");
 
-  strcpy(ssid, "TP-Link_29CD");
-  strcpy(password, "49871005");
+  strcpy(ssid, "Sentinel_GS");
+  strcpy(password, "Sentinel");
 
   load_commands(pars_fname, serial_commands);
 

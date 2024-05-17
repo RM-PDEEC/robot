@@ -14,8 +14,9 @@ struct Point2D {
 };
 
 #define DISTANCE_ERROR_LIMIT    0.05
-#define ANGULAR_ERROR_LIMIT     0.5
-#define ROTATION_STEP           0.5
+#define ANGULAR_ERROR_LIMIT     0.1
+#define ROTATION_STEP           2.1
+#define NORMAL_STEP             3.5
 
 // Function to perform 2D inverse transformation
 Point2D inverseTransformPoint(const Point2D& world_coordinates, double tx, double ty, double angle);
@@ -64,11 +65,11 @@ void trajectory_t::set_theta(void)
 
 void trajectory_t::goto_xy(void)
 {
-  Point2D robot_coordinates = inverseTransformPoint({xt, yt}, 0, 0, 0);
+  Point2D target_robot_coordinates = inverseTransformPoint({xt, yt}, 0, 0, 0);
 
-  e_xy = dist(xr, yr, robot_coordinates.x, robot_coordinates.y);
+  e_xy = dist(xr, yr, target_robot_coordinates.x, target_robot_coordinates.y);
 
-  e_angle = dif_angle(atan2( robot_coordinates.y - yr,  robot_coordinates.x - xr), thetar);
+  e_angle = dif_angle(atan2( target_robot_coordinates.y - yr,  target_robot_coordinates.x - xr), thetar);
 
   if (fabs(e_angle) > ANGULAR_ERROR_LIMIT)
   {
@@ -94,8 +95,59 @@ void trajectory_t::goto_xy(void)
 
 void trajectory_t::follow_line(void)
 {
-  v_req = v_nom;
-  w_req = 0;
+    // get the robot coordinates in the world frame
+    // Point2D target_robot_coordinates = inverseTransformPoint({xt, yt}, 0, 0, 0);
+
+    // e_xy = dist(xr, yr, world_coordinates.x, world_coordinates.y);
+
+    // e_angle = dif_angle(atan2( world_coordinates.y - yr,  world_coordinates.x - xr), thetar);
+
+    // line paralele to y axis
+    float xi_line = 0.0;
+    float yi_line = 0.30;
+    float xt_line = 1.0;
+    float yt_line = 0.30;
+
+    // line paralele to x axis
+    // float yi_line = 0.0;
+    // float xi_line = 0.30;
+    // float yt_line = 1.0;
+    // float xt_line = 0.30;
+
+    //caluclate the module of the vector from the robot and perpendicular to the closest point in the line using the escalar of the vectors
+    float module = ((xr - xi_line) * (xt_line - xi_line) + (yr - yi_line) * (yt_line - yi_line)) / (sqr(xt_line - xi_line) + sqr(yt_line - yi_line));
+    //calculate the point in the line
+    cx = xi_line + module * (xt_line - xi_line);
+    cy = yi_line + module * (yt_line - yi_line);
+
+    //calculate the distance from the robot to the line
+    e_n = dist(xr, yr, cx, cy);
+
+    //calculate the angle between the robot and the line
+    // e_c_angle = dif_angle(atan2(cy - yr, cx - xr), thetar);
+
+    //calculate the angle between the robot and the target
+    e_angle = dif_angle(atan2(yt_line - yr, xt_line - xr), thetar);
+
+    //calculate the distance from the robot to the target
+    e_xy = dist(xr, yr, xt_line, yt_line);
+    
+    if (e_xy > DISTANCE_ERROR_LIMIT)
+    {
+      w_nom = ROTATION_STEP * e_angle + e_n * NORMAL_STEP;
+      v_nom = vt * cos(e_angle);
+      if (v_nom > vt)
+        v_nom = vt;
+    }
+    else
+    {
+      w_nom = 0;
+      v_nom = 0;
+    }
+ 
+
+    v_req = v_nom;
+    w_req = w_nom;
 }
 
 
@@ -104,6 +156,8 @@ void trajectory_t::follow_circle(void)
   v_req = v_nom;
   w_req = w_nom;
 }
+
+
 
 // Function to perform 2D inverse transformation
 Point2D inverseTransformPoint(const Point2D& world_coordinates, double tx, double ty, double angle) {
@@ -139,11 +193,11 @@ Point2D inverseTransformPoint(const Point2D& world_coordinates, double tx, doubl
   }
 
   // Transform coordinates
-  Point2D robot_coordinates;
-  robot_coordinates.x = world_coordinates.x * transformation_matrix[0][0] + world_coordinates.y * transformation_matrix[0][1] + transformation_matrix[0][2];
-  robot_coordinates.y = world_coordinates.x * transformation_matrix[1][0] + world_coordinates.y * transformation_matrix[1][1] + transformation_matrix[1][2];
+  Point2D robot_world_coordinates;
+  robot_world_coordinates.x = world_coordinates.x * transformation_matrix[0][0] + world_coordinates.y * transformation_matrix[0][1] + transformation_matrix[0][2];
+  robot_world_coordinates.y = world_coordinates.x * transformation_matrix[1][0] + world_coordinates.y * transformation_matrix[1][1] + transformation_matrix[1][2];
   
-  return robot_coordinates;
+  return robot_world_coordinates;
 }
 
 // Function to perform 2D transformation

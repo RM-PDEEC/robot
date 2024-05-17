@@ -11,7 +11,7 @@ class trajectory_t
     float vt;
     float v_nom, w_nom;
     float cx, cy;
-    float e_xy, e_angle;
+    float e_xy, e_angle, e_c_angle, e_n;
     float xr, yr, thetar;
 
     float v_req, w_req;

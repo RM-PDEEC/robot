@@ -147,6 +147,22 @@ class main_fsm_t: public state_machine_t
       robot.yt = traj.yt;
       robot.setRobotVW(robot.v_req, robot.w_req);
 
+    } else if (state == 150){
+      robot.control_mode = cm_kinematics;
+      traj.set_theta();
+      traj.xr = robot.xe;
+      traj.yr = robot.ye;
+      traj.thetar = robot.thetae;
+      traj.vt = 0.2;
+      traj.follow_line();
+      robot.angular_error = traj.e_angle;
+      robot.dist_to_goal = traj.e_xy;
+      robot.v_req = traj.v_req;
+      robot.w_req = traj.w_req;
+      // robot.xt = traj.xt;
+      // robot.yt = traj.yt;
+      robot.setRobotVW(robot.v_req, robot.w_req);
+      
     } else if (state == 102) {  // Option for remote PID control
       robot.control_mode = cm_pid;
       
