@@ -153,6 +153,69 @@ void trajectory_t::follow_line(void)
 
 void trajectory_t::follow_circle(void)
 {
+  //circle diameter 1
+  float xc = 0.0; // x center
+  float yc = -0.5; // y center
+  float rc = 0.5; // radius
+
+  // // calculate the tangent to the circle in the closest point to the robot
+  float d = dist(xr, yr, xc, yc);
+  e_n = d - rc;
+  float alpha = atan2(yc - yr, xc - xr); // orientation to the center of the circle
+
+  // normalize the angle to the range of [-π, π]
+  alpha = normalize_angle(alpha);
+
+  // calculate the angle perpendicular to alpha to get the tangent
+  float theta; 
+  // float positive = 1;
+  if (yc >= 0)
+  {
+    theta = alpha - PI / 2;
+  }
+  else
+  {
+    theta = alpha + PI / 2;
+  }
+
+
+  e_angle = dif_angle(theta, thetar);
+
+  // define the final point of the arc trajectory depending on the center of the circle for x and y
+  float xt_circle = xc * 2;
+  float yt_circle = yc * 2;
+  
+  //calculate the distance from the robot to the target
+  e_xy = dist(xr, yr, xt_circle, yt_circle);
+
+
+  if (e_xy > DISTANCE_ERROR_LIMIT)
+  {
+    if (e_angle > 0)
+    {
+      w_nom = ROTATION_STEP * e_angle + e_n * NORMAL_STEP;
+      v_nom = vt * cos(e_angle);
+      if (v_nom > vt)
+        v_nom = vt;
+    }
+    else
+    {
+      w_nom = ROTATION_STEP * e_angle - e_n * NORMAL_STEP;
+      v_nom = vt * cos(e_angle);
+      if (v_nom > vt)
+        v_nom = vt;
+    }
+    // w_nom = ROTATION_STEP * e_angle + e_n * NORMAL_STEP;
+    // v_nom = vt * cos(e_angle);
+    // if (v_nom > vt)
+    //   v_nom = vt;
+  }
+  else
+  {
+    w_nom = 0;
+    v_nom = 0;
+  }
+
   v_req = v_nom;
   w_req = w_nom;
 }
