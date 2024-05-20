@@ -16,12 +16,15 @@ class trajectory_t
 
     float v_req, w_req;
     
+    float done, segments;
+    
     trajectory_t();
     
     void set_theta(void);
     void goto_xy(void);
-    void follow_line(void);
-    void follow_circle(void);
+    void follow_line(float xi_line, float yi_line, float xt_line, float yt_line);
+    void follow_circle(float xc, float yc, float rc, float theta_f);
+    void follow_segments(void);
 };
 
 float sqr(float x);

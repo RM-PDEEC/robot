@@ -13,10 +13,12 @@ struct Point2D {
     double y;
 };
 
-#define DISTANCE_ERROR_LIMIT    0.05
+#define DISTANCE_ERROR_LIMIT    0.025
 #define ANGULAR_ERROR_LIMIT     0.1
-#define ROTATION_STEP           2.1
-#define NORMAL_STEP             3.5
+#define ROTATION_STEP_LINE      2.1
+#define NORMAL_STEP_LINE        3.5
+#define ROTATION_STEP_CIRC      0
+#define NORMAL_STEP_CIRC        0
 
 // Function to perform 2D inverse transformation
 Point2D inverseTransformPoint(const Point2D& world_coordinates, double tx, double ty, double angle);
@@ -73,12 +75,12 @@ void trajectory_t::goto_xy(void)
 
   if (fabs(e_angle) > ANGULAR_ERROR_LIMIT)
   {
-    w_nom = ROTATION_STEP * e_angle;
+    w_nom = ROTATION_STEP_LINE * e_angle;
     v_nom = 0;
   }
   else if (e_xy > DISTANCE_ERROR_LIMIT)
   {
-    w_nom = ROTATION_STEP * e_angle;
+    w_nom = ROTATION_STEP_LINE * e_angle;
     v_nom = vt * cos(e_angle) * e_xy;
     if (v_nom > vt)
       v_nom = vt * cos(e_angle);
@@ -93,20 +95,16 @@ void trajectory_t::goto_xy(void)
   v_req = v_nom;
 }
 
-void trajectory_t::follow_line(void)
+void trajectory_t::follow_line(float xi_line, float yi_line, float xt_line, float yt_line)
 {
     // get the robot coordinates in the world frame
     // Point2D target_robot_coordinates = inverseTransformPoint({xt, yt}, 0, 0, 0);
 
-    // e_xy = dist(xr, yr, world_coordinates.x, world_coordinates.y);
-
-    // e_angle = dif_angle(atan2( world_coordinates.y - yr,  world_coordinates.x - xr), thetar);
-
     // line paralele to y axis
-    float xi_line = 0.0;
-    float yi_line = 0.30;
-    float xt_line = 1.0;
-    float yt_line = 0.30;
+    // float xi_line = 0.0;
+    // float yi_line = 0.30;
+    // float xt_line = 1.0;
+    // float yt_line = 0.30;
 
     // line paralele to x axis
     // float yi_line = 0.0;
@@ -134,7 +132,7 @@ void trajectory_t::follow_line(void)
     
     if (e_xy > DISTANCE_ERROR_LIMIT)
     {
-      w_nom = ROTATION_STEP * e_angle + e_n * NORMAL_STEP;
+      w_nom = ROTATION_STEP_LINE * e_angle + e_n * NORMAL_STEP_LINE;
       v_nom = vt * cos(e_angle);
       if (v_nom > vt)
         v_nom = vt;
@@ -143,25 +141,25 @@ void trajectory_t::follow_line(void)
     {
       w_nom = 0;
       v_nom = 0;
+      done = 1;
     }
  
-
     v_req = v_nom;
     w_req = w_nom;
 }
 
 
-void trajectory_t::follow_circle(void)
+void trajectory_t::follow_circle(float xc, float yc, float rc, float theta_f)
 {
   //circle diameter 1
-  float xc = 0.0; // x center
-  float yc = -0.5; // y center
-  float rc = 0.5; // radius
+  // float xc = 0.0; // x center
+  // float yc = -0.5; // y center
+  // float rc = 0.5; // radius
 
   // // calculate the tangent to the circle in the closest point to the robot
   float d = dist(xr, yr, xc, yc);
   e_n = d - rc;
-  float alpha = atan2(yc - yr, xc - xr); // orientation to the center of the circle
+  float alpha = atan2(yr - yc, xr - xc); // orientation to the center of the circle
 
   // normalize the angle to the range of [-π, π]
   alpha = normalize_angle(alpha);
@@ -169,21 +167,23 @@ void trajectory_t::follow_circle(void)
   // calculate the angle perpendicular to alpha to get the tangent
   float theta; 
   // float positive = 1;
-  if (yc >= 0)
-  {
-    theta = alpha - PI / 2;
-  }
-  else
+  if (theta_f >= 0)
   {
     theta = alpha + PI / 2;
   }
+  else
+  {
+    theta = alpha - PI / 2;
+  }
 
+  theta = normalize_angle(theta);
 
   e_angle = dif_angle(theta, thetar);
 
   // define the final point of the arc trajectory depending on the center of the circle for x and y
-  float xt_circle = xc * 2;
-  float yt_circle = yc * 2;
+  float theta_i = atan2(yi - yc, xi - xc);
+  float xt_circle = xc + rc * cos(theta_f-theta_i);
+  float yt_circle = yc + rc * sin(theta_f-theta_i);
   
   //calculate the distance from the robot to the target
   e_xy = dist(xr, yr, xt_circle, yt_circle);
@@ -193,15 +193,28 @@ void trajectory_t::follow_circle(void)
   {
     if (e_angle > 0)
     {
-      w_nom = ROTATION_STEP * e_angle + e_n * NORMAL_STEP;
+      w_nom = ROTATION_STEP_CIRC * e_angle + e_n * NORMAL_STEP_CIRC + vt/rc;
+      if(e_angle > PI/2)
+      {
+        v_nom = 0;
+      }
+      else {
       v_nom = vt * cos(e_angle);
+      }
       if (v_nom > vt)
         v_nom = vt;
     }
     else
     {
-      w_nom = ROTATION_STEP * e_angle - e_n * NORMAL_STEP;
+      w_nom = ROTATION_STEP_CIRC * e_angle - e_n * NORMAL_STEP_CIRC - vt/rc;
       v_nom = vt * cos(e_angle);
+      if(e_angle < -PI/2)
+      {
+        v_nom = 0;
+      }
+      else {
+      v_nom = vt * cos(e_angle);
+      }
       if (v_nom > vt)
         v_nom = vt;
     }
@@ -214,12 +227,41 @@ void trajectory_t::follow_circle(void)
   {
     w_nom = 0;
     v_nom = 0;
+    done = 1;
   }
 
   v_req = v_nom;
   w_req = w_nom;
 }
 
+void trajectory_t::follow_segments(void)
+{
+  if (done == 1)
+  {
+    segments += 1;
+    done = 0;
+  }
+  if (segments == 0)
+  {
+    follow_line(0.0, 0.15, 1.0, 0.15);
+  }
+  else if (segments == 1)
+  {
+    follow_circle(1.0, 0.0, 0.15, -PI);
+  }
+  else if (segments == 2)
+  {
+    follow_line(1.0, -0.15, 0.0, -0.15);
+  }
+  else if (segments == 3)
+  {
+    follow_circle(0.0, 0.0, 0.15, -PI);
+  }
+  else
+  {
+    done = 1;
+  }
+}
 
 
 // Function to perform 2D inverse transformation

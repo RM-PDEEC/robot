@@ -39,7 +39,7 @@ template <typename T> int sign(T val)
 
 robot_t::robot_t()
 {
-  wheel_dist = 0.125;
+  wheel_dist = 0.120;
   wheel_radius = 0.0689 / 2;
   dv_max = 5;
   dw_max = 10;
