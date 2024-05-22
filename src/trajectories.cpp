@@ -180,10 +180,21 @@ void trajectory_t::follow_circle(float xc, float yc, float rc, float theta_f)
 
   e_angle = dif_angle(theta, thetar);
 
-  // define the final point of the arc trajectory depending on the center of the circle for x and y
-  float theta_i = atan2(yi - yc, xi - xc);
-  float xt_circle = xc + rc * cos(theta_f-theta_i);
-  float yt_circle = yc + rc * sin(theta_f-theta_i);
+  float tau;
+  if (PI - theta_f == 0)
+  {
+    tau = 0;
+  }
+  else
+  {
+    tau = (PI - theta_f) / 2;
+  }
+  float ro = atan2(yc - yi, xc - xi); // inicial alpha
+  float beta = ro - tau;
+  float xt_circle = xc + rc * cos(beta);
+  float yt_circle = yc + rc * sin(beta);
+
+  //0.0 e 0.3
   
   //calculate the distance from the robot to the target
   e_xy = dist(xr, yr, xt_circle, yt_circle);
