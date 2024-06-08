@@ -8,9 +8,15 @@ set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 # Add the executable
+# add_executable(${PROJECT_NAME}
+#     "main.cpp"
+#     "trajectories.cpp"
+# )
+
 add_executable(${PROJECT_NAME}
-    "main.cpp"
-    "trajectories.cpp"
+    "kalmanExample.cpp"
+    "Kalman.cpp"
+    "MatrixUtils.cpp"
 )
 
 # Include header files
