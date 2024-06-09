@@ -38,6 +38,7 @@ void KalmanFilter::Update(const Vector &z)
     }
 
     Matrix S = MatrixUtils::Add(R, MatrixUtils::Mult(H, MatrixUtils::Mult(P, MatrixUtils::Transpose(H))));
+    // Kalman Gain
     Matrix K = MatrixUtils::Mult(P, MatrixUtils::Mult(MatrixUtils::Transpose(H), MatrixUtils::Inv(S)));
     Vector K_y = MatrixUtils::Mult(K, y);
 

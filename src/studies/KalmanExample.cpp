@@ -4,14 +4,20 @@
 #include <cmath>
 #include <cstdlib>
 
+// Source : https://medium.com/@ab.jannatpour/kalman-filter-with-python-code-98641017a2bd
+
 void example()
 {
+    // Process noise covariance
     Matrix Q = {{0.05, 0.0},
                 {0.0, 0.05}};
+    // Measurement noise covariance
     Matrix R = {{0.5, 0},
                 {0, 0.5}};
+    // Measurement matrix
     Matrix H = {{1, 0},
                 {0, 1}};
+    // System model
     Matrix F = {{1, 0},
                 {0, 1}};
     Vector x(100), y(100);
