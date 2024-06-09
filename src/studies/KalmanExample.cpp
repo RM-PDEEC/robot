@@ -4,7 +4,8 @@
 #include <cmath>
 #include <cstdlib>
 
-// Source : https://medium.com/@ab.jannatpour/kalman-filter-with-python-code-98641017a2bd
+// Source(1) : https://medium.com/@ab.jannatpour/kalman-filter-with-python-code-98641017a2bd
+// Source(2) : https://github.com/zziz/kalman-filter/tree/master
 
 void example()
 {
