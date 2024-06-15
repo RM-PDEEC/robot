@@ -13,10 +13,10 @@ struct Point2D {
     double y;
 };
 
-#define DISTANCE_ERROR_LIMIT    0.025
-#define ANGULAR_ERROR_LIMIT     0.1
+#define DISTANCE_ERROR_LIMIT    0.045
+#define ANGULAR_ERROR_LIMIT     0.17
 #define ROTATION_STEP_LINE      2.1
-#define NORMAL_STEP_LINE        3.5
+#define NORMAL_STEP_LINE        4.5
 #define ROTATION_STEP_CIRC      0
 #define NORMAL_STEP_CIRC        0
 
@@ -167,6 +167,8 @@ void trajectory_t::follow_circle(float xc, float yc, float rc, float theta_f)
   // calculate the angle perpendicular to alpha to get the tangent
   float theta; 
   // float positive = 1;
+
+  // Determine the sign of the angle based on the orientation of the robot
   if (theta_f >= 0)
   {
     theta = alpha + PI / 2;
@@ -176,31 +178,34 @@ void trajectory_t::follow_circle(float xc, float yc, float rc, float theta_f)
     theta = alpha - PI / 2;
   }
 
+  // else
+  // {
+  //   if (theta_f >= 0)
+  //   {
+  //     theta = alpha - PI / 2;
+  //   }
+  //   else
+  //   {
+  //     theta = alpha + PI / 2;
+  //   }
+  // }
+
   theta = normalize_angle(theta);
 
   e_angle = dif_angle(theta, thetar);
 
-  float tau;
-  if (PI - theta_f == 0)
-  {
-    tau = 0;
-  }
-  else
-  {
-    tau = (PI - theta_f) / 2;
-  }
-  float ro = atan2(yc - yi, xc - xi); // inicial alpha
-  float beta = ro - tau;
-  float xt_circle = xc + rc * cos(beta);
-  float yt_circle = yc + rc * sin(beta);
 
-  //0.0 e 0.3
+  // float ro = atan2(yi - yc, xi - xc); // inicial angle from the center of the circle to the initial point
+  // float beta = atan2(yr - yc, xr - xc); // angle from the center of the circle to the robot
+  // float t_angle = dif_angle(beta, ro); // angle from the initial point to the robot
+  float xt_circle = xc + rc * cos(theta_f);
+  float yt_circle = yc + rc * sin(theta_f);
   
   //calculate the distance from the robot to the target
   e_xy = dist(xr, yr, xt_circle, yt_circle);
 
 
-  if (e_xy > DISTANCE_ERROR_LIMIT)
+  if (e_xy > DISTANCE_ERROR_LIMIT) // || t_angle > ANGULAR_ERROR_LIMIT)
   {
     if (e_angle > 0)
     {
@@ -229,10 +234,6 @@ void trajectory_t::follow_circle(float xc, float yc, float rc, float theta_f)
       if (v_nom > vt)
         v_nom = vt;
     }
-    // w_nom = ROTATION_STEP * e_angle + e_n * NORMAL_STEP;
-    // v_nom = vt * cos(e_angle);
-    // if (v_nom > vt)
-    //   v_nom = vt;
   }
   else
   {
@@ -254,19 +255,19 @@ void trajectory_t::follow_segments(void)
   }
   if (segments == 0)
   {
-    follow_line(0.0, 0.15, 1.0, 0.15);
+    follow_line(0.0, 0.15, 0.3, 0.15);
   }
   else if (segments == 1)
   {
-    follow_circle(1.0, 0.0, 0.15, -PI);
+    follow_circle(0.3, 0.0, 0.15, -PI/2.0);
   }
   else if (segments == 2)
   {
-    follow_line(1.0, -0.15, 0.0, -0.15);
+    follow_line(0.3, -0.15, 0.0, -0.15);
   }
   else if (segments == 3)
   {
-    follow_circle(0.0, 0.0, 0.15, -PI);
+    follow_circle(0.0, 0.0, 0.15, PI/2);
   }
   else
   {
