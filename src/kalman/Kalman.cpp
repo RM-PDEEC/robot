@@ -1,5 +1,20 @@
 #include "Kalman.h"
 
+KalmanFilter::KalmanFilter()
+{
+    Q = {{0.05, 0.0},
+         {0.0, 0.05}};
+    R = {{0.5, 0},
+         {0, 0.5}};
+    H = {{1, 0},
+         {0, 1}};
+    F = {{1, 0},
+         {0, 1}};
+    B = MatrixUtils::Identity(F.size());
+    P = MatrixUtils::Identity(F.size());
+    x = {0, 0}; 
+}
+
 KalmanFilter::KalmanFilter(const Matrix &F, const Matrix &H, 
                            const Matrix &Q, const Matrix &R, 
                            const Vector &x0)

@@ -3,8 +3,13 @@
 #include "state_machines.h"
 #include "motor_bench.h"
 #include "trajectories.h"
+#include "kalman/Kalman.h"
 
 motor_bench_t motor_bench;
+
+#ifdef KALMAN 
+KalmanFilter kf;
+#endif
 
 class main_fsm_t: public state_machine_t
 {
@@ -180,10 +185,26 @@ class main_fsm_t: public state_machine_t
       robot.setRobotVW(robot.v_req, robot.w_req);
 
     } else if (state == 152){
+#ifdef KALMAN      
+      Vector new_coord = kf.Predict();
+      try
+      {
+        kf.Update({robot.xe, robot.ye});
+      }
+      catch (const std::exception &e)
+      {
+        Serial.print(e.what());
+      }
+#endif
       robot.control_mode = cm_kinematics;
       traj.set_theta();
+#ifdef KALMAN
+      traj.xr = new_coord[0];
+      traj.yr = new_coord[1];
+#else
       traj.xr = robot.xe;
       traj.yr = robot.ye;
+#endif
       traj.thetar = robot.thetae;
       traj.vt = 0.2;
       traj.follow_segments();
