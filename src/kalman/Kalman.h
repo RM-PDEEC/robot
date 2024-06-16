@@ -7,6 +7,7 @@ using namespace std;
 
 class KalmanFilter {
 public:
+    KalmanFilter();
     KalmanFilter(const Matrix &F, const Matrix &H, 
                  const Matrix &Q, const Matrix &R, 
                  const Vector &x0);
