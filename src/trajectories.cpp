@@ -270,7 +270,7 @@ void trajectory_t::follow_segments(void)
   }
   else if (segments == 3)
   {
-    follow_circle(0.0, 0.0, 0.15, PI/2);
+    follow_circle(0.0, 0.0, 0.15, -PI/2.0);
   }
   else
   {
