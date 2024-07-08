@@ -4,6 +4,7 @@
 #include "motor_bench.h"
 #include "trajectories.h"
 
+
 motor_bench_t motor_bench;
 
 class main_fsm_t: public state_machine_t
