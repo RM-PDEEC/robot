@@ -13,7 +13,7 @@ struct Point2D {
     double y;
 };
 
-#define DISTANCE_ERROR_LIMIT    0.045
+#define DISTANCE_ERROR_LIMIT    0.06
 #define ANGULAR_ERROR_LIMIT     0.17
 #define ROTATION_STEP_LINE      2.1
 #define NORMAL_STEP_LINE        4.5
@@ -149,7 +149,7 @@ void trajectory_t::follow_line(float xi_line, float yi_line, float xt_line, floa
 }
 
 
-void trajectory_t::follow_circle(float xc, float yc, float rc, float theta_f)
+void trajectory_t::follow_circle(float xc, float yc, float rc, float theta_f, int direction)
 {
   //circle diameter 1
   // float xc = 0.0; // x center
@@ -178,6 +178,10 @@ void trajectory_t::follow_circle(float xc, float yc, float rc, float theta_f)
     theta = alpha - PI / 2;
   }
 
+  if (direction == -1)
+  {
+    theta = theta + PI;
+  }
   // else
   // {
   //   if (theta_f >= 0)
@@ -198,6 +202,11 @@ void trajectory_t::follow_circle(float xc, float yc, float rc, float theta_f)
   // float ro = atan2(yi - yc, xi - xc); // inicial angle from the center of the circle to the initial point
   // float beta = atan2(yr - yc, xr - xc); // angle from the center of the circle to the robot
   // float t_angle = dif_angle(beta, ro); // angle from the initial point to the robot
+  // int orient_x = (xr < xc) ? -1 : 1;
+  // int orient_y = (yr < yc) ? -1 : 1;
+
+  // float xt_circle = xc + orient_x * rc * cos(theta_f);
+  // float yt_circle = yc + orient_y * rc * sin(theta_f);
   float xt_circle = xc + rc * cos(theta_f);
   float yt_circle = yc + rc * sin(theta_f);
   
@@ -259,7 +268,7 @@ void trajectory_t::follow_segments(void)
   }
   else if (segments == 1)
   {
-    follow_circle(0.3, 0.0, 0.15, -PI/2.0);
+    follow_circle(0.3, 0.0, 0.15, -PI/2.0, 1);
   }
   else if (segments == 2)
   {
@@ -267,7 +276,11 @@ void trajectory_t::follow_segments(void)
   }
   else if (segments == 3)
   {
-    follow_circle(0.0, 0.0, 0.15, PI/2);
+    follow_circle(0.0, 0.0, 0.15, PI/2.0, -1);
+  }
+  else if (segments == 4)
+  {
+    follow_line(0.0, 0.15, 0.3, 0.15);
   }
   else
   {

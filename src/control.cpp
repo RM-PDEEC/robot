@@ -170,7 +170,7 @@ class main_fsm_t: public state_machine_t
       traj.yr = robot.ye;
       traj.thetar = robot.thetae;
       traj.vt = 0.2;
-      traj.follow_circle(0.0, -0.15, 0.15, -PI/2.0);
+      traj.follow_circle(0.0, -0.15, 0.15, -PI/2.0, 1);
       robot.angular_error = traj.e_angle;
       robot.dist_to_goal = traj.e_xy;
       robot.v_req = traj.v_req;
