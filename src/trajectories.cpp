@@ -202,11 +202,6 @@ void trajectory_t::follow_circle(float xc, float yc, float rc, float theta_f, in
   // float ro = atan2(yi - yc, xi - xc); // inicial angle from the center of the circle to the initial point
   // float beta = atan2(yr - yc, xr - xc); // angle from the center of the circle to the robot
   // float t_angle = dif_angle(beta, ro); // angle from the initial point to the robot
-  // int orient_x = (xr < xc) ? -1 : 1;
-  // int orient_y = (yr < yc) ? -1 : 1;
-
-  // float xt_circle = xc + orient_x * rc * cos(theta_f);
-  // float yt_circle = yc + orient_y * rc * sin(theta_f);
   float xt_circle = xc + rc * cos(theta_f);
   float yt_circle = yc + rc * sin(theta_f);
   
@@ -276,7 +271,7 @@ void trajectory_t::follow_segments(void)
   }
   else if (segments == 3)
   {
-    follow_circle(0.0, 0.0, 0.15, PI/2.0, -1);
+    follow_circle(0.0, 0.0, 0.15, PI/2, -1);
   }
   else if (segments == 4)
   {
