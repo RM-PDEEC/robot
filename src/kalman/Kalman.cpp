@@ -2,13 +2,12 @@
 
 KalmanFilter::KalmanFilter()
 {
-    Q = {{0.05, 0.0},
-         {0.0, 0.05}};
-    R = {{0.5, 0},
-         {0, 0.5}};
+    Q = {{0.001, 0.0},
+         {0.001, 0.0}}; 
+    R = {{0.01}};
     H = {{1, 0},
          {0, 1}};
-    F = {{1, 0},
+    F = {{1, 0.040},
          {0, 1}};
     B = MatrixUtils::Identity(F.size());
     P = MatrixUtils::Identity(F.size());

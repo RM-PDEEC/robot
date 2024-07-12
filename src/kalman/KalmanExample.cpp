@@ -19,7 +19,7 @@ void example()
     Matrix H = {{1, 0},
                 {0, 1}};
     // System model
-    Matrix F = {{1, 0},
+    Matrix F = {{1, 0.040},
                 {0, 1}};
     Vector x(100), y(100);
     Matrix measurements;

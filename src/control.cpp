@@ -8,7 +8,7 @@
 
 motor_bench_t motor_bench;
 
-#ifdef KALMAN 
+#ifdef KALMAN
 KalmanFilter kf;
 #endif
 
