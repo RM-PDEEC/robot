@@ -13,7 +13,7 @@ public:
                  const Vector &x0);
 
     Vector Predict(const Vector &u = {});
-    void Update(const Vector &z);
+    int Update(const Vector &z);
 
 private:
     /** 

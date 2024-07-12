@@ -7,6 +7,8 @@
 
 using namespace std;
 
+#define INVALID_MATRIX      22
+
 typedef vector<double> Vector;
 typedef vector<Vector> Matrix;
 
@@ -16,7 +18,7 @@ public:
     static Matrix Add(const Matrix &A, const Matrix &B);
     static Matrix Sub(const Matrix &A, const Matrix &B);
     static Matrix Transpose(const Matrix &A);
-    static Matrix Inv(const Matrix &A);
+    static int Inv(const Matrix &A, Matrix &result);
     static Matrix Identity(int n);
     static Matrix Mult(const Matrix &A, const Matrix &B);
     static vector<double> Mult(const Matrix &A, const Vector &B);
