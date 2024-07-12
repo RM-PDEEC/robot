@@ -56,11 +56,10 @@ int KalmanFilter::Update(const Vector &z)
 
     Matrix result;
     int status = MatrixUtils::Inv(S, result);
-    // if (status != 0);
-    // {
-    //     cout << "ole 2 " << status << endl;
-    //     return status;
-    // }
+    if (status < 0)
+    {
+        return status;
+    }
     // Kalman Gain
     Matrix K = MatrixUtils::Mult(MatrixUtils::Mult(P, MatrixUtils::Transpose(H)), result);
     Vector K_y = MatrixUtils::Mult(K, y);
