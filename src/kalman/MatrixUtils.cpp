@@ -150,6 +150,41 @@ exit:
     return status;
 }
 
+void MatrixUtils::Inv(const Matrix &A, Matrix **result)
+{
+    if (result == nullptr)
+    {
+        return;
+    }
+
+    if (A.size() == 1 && A[0].size() == 1)
+    {
+        if (A[0][0] == 0)
+        {
+            return;
+        }
+
+        *result = new Matrix({
+            {1 / A[0][0]}
+        });
+    }
+    else if (A.size() == 2 && A[0].size() == 2)
+    {
+        double det = A[0][0] * A[1][1] - A[0][1] * A[1][0];
+        if (det == 0)
+        {
+            return;
+        }
+
+        double inv_det = 1.0 / det;
+
+        *result = new Matrix({
+            {A[1][1] * inv_det, -A[0][1] * inv_det},
+            {-A[1][0] * inv_det, A[0][0] * inv_det}
+        });
+    }
+}
+
 void MatrixUtils::Print(const Matrix &A)
 {
     for (const auto &row : A)

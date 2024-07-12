@@ -54,14 +54,14 @@ int KalmanFilter::Update(const Vector &z)
 
     Matrix S = MatrixUtils::Add(R, MatrixUtils::Mult(H, MatrixUtils::Mult(P, MatrixUtils::Transpose(H))));
 
-    Matrix result;
-    int status = MatrixUtils::Inv(S, result);
-    if (status < 0)
+    Matrix *result = nullptr;
+    MatrixUtils::Inv(S, &result);
+    if (result == nullptr)
     {
-        return status;
+        return -1;
     }
     // Kalman Gain
-    Matrix K = MatrixUtils::Mult(MatrixUtils::Mult(P, MatrixUtils::Transpose(H)), result);
+    Matrix K = MatrixUtils::Mult(MatrixUtils::Mult(P, MatrixUtils::Transpose(H)), *result);
     Vector K_y = MatrixUtils::Mult(K, y);
 
     for (size_t i = 0; i < x.size(); ++i)

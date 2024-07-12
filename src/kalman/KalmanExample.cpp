@@ -41,11 +41,10 @@ void example()
     int status;
     for (const auto &z : measurements)
     {
-        printf("status: (%.2f)\n", status);
         predictions.push_back(kf.Predict());
-        printf("status: (%.2f)\n", status);
         status = kf.Update(z);
-        printf("status: (%.2f)\n", status);
+        if (status < 0)
+            printf("status: %d\n", status);
     }
 
     for (size_t i = 0; i < measurements.size(); ++i)

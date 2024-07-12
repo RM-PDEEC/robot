@@ -19,6 +19,7 @@ public:
     static Matrix Sub(const Matrix &A, const Matrix &B);
     static Matrix Transpose(const Matrix &A);
     static int Inv(const Matrix &A, Matrix &result);
+    static void Inv(const Matrix &A, Matrix **result);
     static Matrix Identity(int n);
     static Matrix Mult(const Matrix &A, const Matrix &B);
     static vector<double> Mult(const Matrix &A, const Vector &B);
