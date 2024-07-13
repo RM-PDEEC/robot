@@ -16,7 +16,9 @@ class MatrixUtils
 {
 public:
     static Matrix Add(const Matrix &A, const Matrix &B);
+    static Vector Add(const Vector &A, const Vector &B);
     static Matrix Sub(const Matrix &A, const Matrix &B);
+    static Vector Sub(const Vector &A, const Vector &B);
     static Matrix Transpose(const Matrix &A);
     static int Inv(const Matrix &A, Matrix &result);
     static void Inv(const Matrix &A, Matrix **result);

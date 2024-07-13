@@ -17,6 +17,19 @@ Matrix MatrixUtils::Add(const Matrix &A, const Matrix &B)
     return C;
 }
 
+Vector MatrixUtils::Add(const Vector &A, const Vector &B)
+{
+    size_t n = A.size();
+    Vector C(n, 0);
+
+    for (size_t i = 0; i < n; ++i)
+    {
+        C[i] = A[i] + B[i];
+    }
+
+    return C;
+}
+
 Matrix MatrixUtils::Sub(const Matrix &A, const Matrix &B)
 {
     size_t n = A.size(), m = A[0].size();
@@ -33,6 +46,18 @@ Matrix MatrixUtils::Sub(const Matrix &A, const Matrix &B)
 
     return C;
 }
+
+Vector MatrixUtils::Sub(const Vector &A, const Vector &B)
+{
+        size_t n = A.size();
+        Vector C(n, 0);
+
+        for (size_t i = 0; i < n; ++i) {
+            C[i] = A[i] - B[i];
+        }
+
+        return C;
+    }
 
 Matrix MatrixUtils::Transpose(const Matrix &A)
 {
