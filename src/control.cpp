@@ -5,12 +5,18 @@
 #include "trajectories.h"
 #include "kalman/Kalman.h"
 
+#include "IRLine.h"
+
 
 motor_bench_t motor_bench;
 
 #ifdef KALMAN
 KalmanFilter kf;
 #endif
+
+// #ifndef IRLINE
+// IRLine_t IRLine;
+// #endif
 
 class main_fsm_t: public state_machine_t
 {
@@ -220,14 +226,21 @@ class main_fsm_t: public state_machine_t
       
     } else if (state == 102) {  // Option for remote PID control
       robot.control_mode = cm_pid;
-      
+    
+    } else if (state == 198) {
+    // IR calibration
+      robot.IRLine.calibrate();
+    // robot.send_command("ir", IRLine.IR_WaterLevel);
+    // robot.send_command("thres", IRLine.IR_tresh);
 
     } else if (state == 199) {
-      /*robot.v_req = 0.1;   // Simple line follwower
-      robot.w_req = 4 * IRLine.IR_values[4] / 1024.0 
-                  + 2 * IRLine.IR_values[3] / 1024.0
-                  - 2 * IRLine.IR_values[1] / 1024.0
-                  - 4 * IRLine.IR_values[0] / 1024.0;*/
+      robot.v_req = 0.1;   // Simple line follower
+      robot.w_req = 4 * robot.IRLine.IR_values[4] / 1023.0 
+                  + 2 * robot.IRLine.IR_values[3] / 1023.0
+                  - 2 * robot.IRLine.IR_values[1] / 1023.0
+                  - 4 * robot.IRLine.IR_values[0] / 1023.0;
+
+      robot.setRobotVW(robot.v_req, robot.w_req);
 
     } else if (state == 200) {  // Direct stop
       robot.control_mode = cm_voltage;

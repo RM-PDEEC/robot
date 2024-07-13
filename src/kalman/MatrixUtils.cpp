@@ -51,39 +51,6 @@ Matrix MatrixUtils::Transpose(const Matrix &A)
     return C;
 }
 
-Matrix MatrixUtils::Inv(const Matrix &A)
-{
-    if (A.size() == 1 && A[0].size() == 1)
-    {
-        if (A[0][0] == 0)
-        {
-            // throw std::runtime_error("Matrix is singular and cannot be inverted.");
-            return {{0,0},{0,0}};
-        }
-
-        return {{1 / A[0][0]}};
-    }
-    else if (A.size() == 2 && A[0].size() == 2)
-    {
-        double det = A[0][0] * A[1][1] - A[0][1] * A[1][0];
-        if (det == 0)
-        {
-            // throw std::runtime_error("Matrix is singular and cannot be inverted.");
-            return {{0,0},{0,0}};
-        }
-        double inv_det = 1.0 / det;
-
-        return {{A[1][1] * inv_det, -A[0][1] * inv_det},
-                {-A[1][0] * inv_det, A[0][0] * inv_det}};
-    }
-    else
-    {
-        // throw std::invalid_argument("Only 1x1 and 2x2 matrices are supported in Inv.");
-        return {{0,0},{0,0}};
-    }
-    return {{0,0},{0,0}};
-}
-
 Matrix MatrixUtils::Identity(int n)
 {
     Matrix I(n, Vector(n, 0));
@@ -148,6 +115,74 @@ Matrix MatrixUtils::OuterProduct(const Vector &a, const Vector &b)
     }
 
     return C;
+}
+
+int MatrixUtils::Inv(const Matrix &A, Matrix &result)
+{
+    int status = 0;
+
+    if (A.size() == 1 && A[0].size() == 1)
+    {
+        if (A[0][0] == 0)
+        {
+            status = -INVALID_MATRIX;
+            goto exit;
+        }
+
+        result = {{1 / A[0][0]}};
+    }
+    else if (A.size() == 2 && A[0].size() == 2)
+    {
+        double det = A[0][0] * A[1][1] - A[0][1] * A[1][0];
+        if (det == 0)
+        {
+            status = -INVALID_MATRIX;
+            goto exit;
+        }
+
+        double inv_det = 1.0 / det;
+
+        result = {{A[1][1] * inv_det, -A[0][1] * inv_det},
+                {-A[1][0] * inv_det, A[0][0] * inv_det}};
+    }
+
+exit:
+    return status;
+}
+
+void MatrixUtils::Inv(const Matrix &A, Matrix **result)
+{
+    if (result == nullptr)
+    {
+        return;
+    }
+
+    if (A.size() == 1 && A[0].size() == 1)
+    {
+        if (A[0][0] == 0)
+        {
+            return;
+        }
+
+        *result = new Matrix({
+            {1 / A[0][0]}
+        });
+    }
+    else if (A.size() == 2 && A[0].size() == 2)
+    {
+        double det = A[0][0] * A[1][1] - A[0][1] * A[1][0];
+        if (det == 0)
+        {
+            return;
+        }
+
+        double inv_det = 1.0 / det;
+
+        *result = new Matrix({
+            {A[1][1] * inv_det, -A[0][1] * inv_det},
+            {-A[1][0] * inv_det, A[0][0] * inv_det}
+        });
+    }
 }
 
 void MatrixUtils::Print(const Matrix &A)

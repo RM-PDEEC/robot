@@ -2,9 +2,10 @@
 
 KalmanFilter::KalmanFilter()
 {
-    Q = {{0.001, 0.0},
-         {0.001, 0.0}}; 
-    R = {{0.01}};
+    Q = {{0.05, 0.0},
+         {0.0, 0.05}};
+    R = {{0.5, 0},
+         {0, 0.5}};
     H = {{1, 0},
          {0, 1}};
     F = {{1, 0.040},
@@ -36,12 +37,12 @@ Vector KalmanFilter::Predict(const Vector &v)
         }
     }
 
-    P = MatrixUtils::Add(MatrixUtils::Mult(F, MatrixUtils::Mult(P, MatrixUtils::Transpose(F))), Q);
+    P = MatrixUtils::Add(MatrixUtils::Mult(MatrixUtils::Mult(F, P), MatrixUtils::Transpose(F)), Q);
 
     return x;
 }
 
-void KalmanFilter::Update(const Vector &z)
+int KalmanFilter::Update(const Vector &z)
 {
     Vector y = z;
     Vector Hx = MatrixUtils::Mult(H, x);
@@ -52,8 +53,15 @@ void KalmanFilter::Update(const Vector &z)
     }
 
     Matrix S = MatrixUtils::Add(R, MatrixUtils::Mult(H, MatrixUtils::Mult(P, MatrixUtils::Transpose(H))));
+
+    Matrix *result = nullptr;
+    MatrixUtils::Inv(S, &result);
+    if (result == nullptr)
+    {
+        return -1;
+    }
     // Kalman Gain
-    Matrix K = MatrixUtils::Mult(P, MatrixUtils::Mult(MatrixUtils::Transpose(H), MatrixUtils::Inv(S)));
+    Matrix K = MatrixUtils::Mult(MatrixUtils::Mult(P, MatrixUtils::Transpose(H)), *result);
     Vector K_y = MatrixUtils::Mult(K, y);
 
     for (size_t i = 0; i < x.size(); ++i)
@@ -66,5 +74,7 @@ void KalmanFilter::Update(const Vector &z)
 
     P = MatrixUtils::Mult(MatrixUtils::Sub(I, KH),
                           MatrixUtils::Mult(P, MatrixUtils::Transpose(MatrixUtils::Sub(I, KH))));
-    P = MatrixUtils::Add(P, MatrixUtils::Mult(K, MatrixUtils::Mult(R, MatrixUtils::Transpose(K))));
+    P = MatrixUtils::Add(P, MatrixUtils::Mult(MatrixUtils::Mult(K, R), MatrixUtils::Transpose(K)));
+
+    return 0;
 }
