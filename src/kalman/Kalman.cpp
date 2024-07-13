@@ -2,17 +2,17 @@
 
 KalmanFilter::KalmanFilter()
 {
-    Q = {{0.25, 0.0},
-         {0.25, 0.0}};
-    R = {{0.1, 0.0},
+    Q = {{0.01, 0.0},
+         {0.2, 0.0}};
+    R = {{0.5, 0.0},
          {0.0, 0.1}};
     H = {{1, 0},
          {0, 1}};
-    F = {{1, 0},
+    F = {{1, 0.04},
          {0, 1}};
     B = MatrixUtils::Identity(F.size());
     P = MatrixUtils::Identity(F.size());
-    x = {0, 0}; 
+    x = {0.0, 0.0}; 
 }
 
 KalmanFilter::KalmanFilter(const Matrix &F, const Matrix &H, 
@@ -30,11 +30,7 @@ Vector KalmanFilter::Predict(const Vector &v)
 
     if (!v.empty())
     {
-        Vector Bv = MatrixUtils::Mult(B, v);
-        for (size_t i = 0; i < x.size(); ++i)
-        {
-            x[i] += Bv[i];
-        }
+        x = MatrixUtils::Add(x, MatrixUtils::Mult(B, v));
     }
 
     P = MatrixUtils::Add(MatrixUtils::Mult(MatrixUtils::Mult(F, P), MatrixUtils::Transpose(F)), Q);
@@ -44,15 +40,9 @@ Vector KalmanFilter::Predict(const Vector &v)
 
 int KalmanFilter::Update(const Vector &z)
 {
-    Vector y = z;
-    Vector Hx = MatrixUtils::Mult(H, x);
-
-    for (size_t i = 0; i < y.size(); ++i)
-    {
-        y[i] -= Hx[i];
-    }
-
-    Matrix S = MatrixUtils::Add(R, MatrixUtils::Mult(H, MatrixUtils::Mult(P, MatrixUtils::Transpose(H))));
+    Vector y = MatrixUtils::Sub(z, MatrixUtils::Mult(H, x));
+    Matrix PHt = MatrixUtils::Mult(P, MatrixUtils::Transpose(H));
+    Matrix S = MatrixUtils::Add(R, MatrixUtils::Mult(H, PHt));
 
     Matrix *result = nullptr;
     MatrixUtils::Inv(S, &result);
@@ -61,20 +51,21 @@ int KalmanFilter::Update(const Vector &z)
         return -1;
     }
     // Kalman Gain
-    Matrix K = MatrixUtils::Mult(MatrixUtils::Mult(P, MatrixUtils::Transpose(H)), *result);
-    Vector K_y = MatrixUtils::Mult(K, y);
+    Matrix K = MatrixUtils::Mult(PHt, *result);
 
-    for (size_t i = 0; i < x.size(); ++i)
-    {
-        x[i] += K_y[i];
-    }
+    x = MatrixUtils::Add(x, MatrixUtils::Mult(K, y));
 
     Matrix I = MatrixUtils::Identity(F.size());
-    Matrix KH = MatrixUtils::Mult(K, H);
 
-    P = MatrixUtils::Mult(MatrixUtils::Sub(I, KH),
-                          MatrixUtils::Mult(P, MatrixUtils::Transpose(MatrixUtils::Sub(I, KH))));
-    P = MatrixUtils::Add(P, MatrixUtils::Mult(MatrixUtils::Mult(K, R), MatrixUtils::Transpose(K)));
+    Matrix eq1 = MatrixUtils::Sub(I, MatrixUtils::Mult(K, H));
+    Matrix eq2 = MatrixUtils::Transpose(eq1);
+    Matrix eq3 = MatrixUtils::Mult(MatrixUtils::Mult(K, R),
+                                   MatrixUtils::Transpose(K));
+    
+    Matrix A = MatrixUtils::Mult(eq1, P);
+    Matrix B = MatrixUtils::Add(eq2, eq3);
+
+    P = MatrixUtils::Mult(A, B);
 
     return 0;
 }
