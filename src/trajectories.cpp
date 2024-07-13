@@ -13,12 +13,12 @@ struct Point2D {
     double y;
 };
 
-#define DISTANCE_ERROR_LIMIT    0.07
+#define DISTANCE_ERROR_LIMIT    0.1
 #define ANGULAR_ERROR_LIMIT     0.17
 #define ROTATION_STEP_LINE      2.1
-#define NORMAL_STEP_LINE        4.5
-#define ROTATION_STEP_CIRC      0
-#define NORMAL_STEP_CIRC        0
+#define NORMAL_STEP_LINE        5.0
+#define ROTATION_STEP_CIRC      1.0
+#define NORMAL_STEP_CIRC        1.5
 
 // Function to perform 2D inverse transformation
 Point2D inverseTransformPoint(const Point2D& world_coordinates, double tx, double ty, double angle);

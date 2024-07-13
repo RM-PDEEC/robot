@@ -5,10 +5,10 @@ KalmanFilter::KalmanFilter()
     Q = {{0.01, 0.0},
          {0.2, 0.0}};
     R = {{0.5, 0.0},
-         {0.0, 0.1}};
+         {0.0, 0.004}};
     H = {{1, 0},
          {0, 1}};
-    F = {{1, 0.04},
+    F = {{1, 0.045},
          {0, 1}};
     B = MatrixUtils::Identity(F.size());
     P = MatrixUtils::Identity(F.size());
