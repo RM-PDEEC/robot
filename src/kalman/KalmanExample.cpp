@@ -64,7 +64,17 @@ void real()
 {
     Matrix predictions;
 
-    KalmanFilter kf;
+    Matrix Q = {{0.01, 0.0},
+                {0.2, 0.0}};
+    Matrix R = {{0.5, 0.0},
+                {0.0, 0.002}};
+    Matrix H = {{1, 0},
+                {0, 1}};
+    Matrix F = {{1, 0.04},
+                {0, 1}};
+    Vector x0 = real_positions[0];
+
+    KalmanFilter kf(F, H, Q, R, x0);
     int status;
     for (const auto &z : real_positions)
     {
@@ -173,9 +183,9 @@ void autoTune()
 
 #ifndef KALMAN
 
-int main() {
-    autoTune();
-    return 0;
-}
+// int main() {
+//     real();
+//     return 0;
+// }
 
 #endif
