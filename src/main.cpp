@@ -761,11 +761,14 @@ void loop()
 
     serial_commands.send_command("IP", WiFi.localIP().toString().c_str());
     
-    //serial_commands.send_command("IR0", robot.IRLine.IR_values[0]);
-    //serial_commands.send_command("IR1", robot.IRLine.IR_values[1]);
-    //serial_commands.send_command("IR2", robot.IRLine.IR_values[2]);
-    //serial_commands.send_command("IR3", robot.IRLine.IR_values[3]);
-    //serial_commands.send_command("IR4", robot.IRLine.IR_values[4]);
+    serial_commands.send_command("IR0", robot.IRLine.IR_values[0]);
+    serial_commands.send_command("IR1", robot.IRLine.IR_values[1]);
+    serial_commands.send_command("IR2", robot.IRLine.IR_values[2]);
+    serial_commands.send_command("IR3", robot.IRLine.IR_values[3]);
+    serial_commands.send_command("IR4", robot.IRLine.IR_values[4]);
+
+    serial_commands.send_command("IL", robot.IRLine.IR_WaterLevel);
+    serial_commands.send_command("IT", robot.IRLine.IR_tresh);
 
     //serial_commands.send_command("d0", robot.tof_dist);
 

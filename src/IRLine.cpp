@@ -31,8 +31,8 @@
 
 IRLine_t::IRLine_t()
 {
-  IR_WaterLevel = 0;
-  IR_tresh = 512;
+  IR_WaterLevel = 204;
+  IR_tresh = 191;
   cross_tresh = 3;
   black_cross_level = 2.8;
 }
@@ -43,6 +43,7 @@ void IRLine_t::calibrate(void)
   int v, min, max, last_v, min_lim, max_lim, counter, mean;
   short i = 0;
   float intervalo = 0.0625;
+  int IR_means= 0;
 
   min = 0;
   max = 1023;
@@ -57,27 +58,32 @@ void IRLine_t::calibrate(void)
   last_v = 0;
   counter = 15;
   
+  
   for(i = 0; i < counter; i++)
   {
     for(c = 0; c < 5; c++)
     {
-      v = IR_values[c] - IR_WaterLevel;
+      v = IR_values[c]; // - IR_WaterLevel;
 
       if(v > max_lim) v = max;
       if(v < min_lim) v = min;
 
       total = total + v;
     }
-
+    
     mean = total/5;
-    IR_WaterLevel = mean;
-
-    IR_tresh = IR_WaterLevel + intervalo * (min - IR_WaterLevel);
+    IR_means = IR_means + mean;
 
     total = 0;
     mean = 0;
   }
+  
+  IR_WaterLevel = IR_means/counter;
+  IR_tresh = IR_WaterLevel + intervalo * (min - IR_WaterLevel);
 
+  //Set IR_tresh and IR_WaterLevel on struct
+  // IR_tresh = 444;
+  // IR_WaterLevel = 128;
 }
 
 

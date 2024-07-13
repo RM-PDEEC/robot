@@ -13,7 +13,7 @@ struct Point2D {
     double y;
 };
 
-#define DISTANCE_ERROR_LIMIT    0.06
+#define DISTANCE_ERROR_LIMIT    0.07
 #define ANGULAR_ERROR_LIMIT     0.17
 #define ROTATION_STEP_LINE      2.1
 #define NORMAL_STEP_LINE        4.5
