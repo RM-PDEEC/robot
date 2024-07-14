@@ -235,10 +235,14 @@ class main_fsm_t: public state_machine_t
 
     } else if (state == 199) {
       robot.v_req = 0.1;   // Simple line follower
-      robot.w_req = 4 * robot.IRLine.IR_values[4] / 1023.0 
-                  + 2 * robot.IRLine.IR_values[3] / 1023.0
-                  - 2 * robot.IRLine.IR_values[1] / 1023.0
-                  - 4 * robot.IRLine.IR_values[0] / 1023.0;
+      // robot.w_req = 4 * robot.IRLine.IR_values[4] / 1023.0 
+      //             + 2 * robot.IRLine.IR_values[3] / 1023.0
+      //             - 2 * robot.IRLine.IR_values[1] / 1023.0
+      //             - 4 * robot.IRLine.IR_values[0] / 1023.0;
+
+      //use pose left and right to define the middle of the line
+      robot.w_req = robot.IRLine.IR_WaterLevel/1023 - (0.5 * (robot.IRLine.pos_left - robot.IRLine.pos_right) / 16.0);
+      robot.w_req = robot.w_req * 0.6;
 
       robot.setRobotVW(robot.v_req, robot.w_req);
 

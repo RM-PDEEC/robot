@@ -80,10 +80,7 @@ void IRLine_t::calibrate(void)
   
   IR_WaterLevel = IR_means/counter;
   IR_tresh = IR_WaterLevel + intervalo * (min - IR_WaterLevel);
-
-  //Set IR_tresh and IR_WaterLevel on struct
-  // IR_tresh = 444;
-  // IR_WaterLevel = 128;
+  
 }
 
 
